@@ -36,6 +36,8 @@ export async function syncUser() {
   }
 }
 
+// Server actions shouldn't use React hooks
+// Move any hook usage to a client component
 export async function getUserByClerkId(clerkId: string) {
   return prisma.user.findUnique({
     where: {
@@ -70,7 +72,6 @@ export async function getRandomUsers() {
 
     if (!userId) return [];
 
-    // get 3 random users exclude ourselves & users that we already follow
     const randomUsers = await prisma.user.findMany({
       where: {
         AND: [
@@ -125,7 +126,6 @@ export async function toggleFollow(targetUserId: string) {
     });
 
     if (existingFollow) {
-      // unfollow
       await prisma.follows.delete({
         where: {
           followerId_followingId: {
@@ -135,7 +135,6 @@ export async function toggleFollow(targetUserId: string) {
         },
       });
     } else {
-      // follow
       await prisma.$transaction([
         prisma.follows.create({
           data: {
@@ -147,8 +146,8 @@ export async function toggleFollow(targetUserId: string) {
         prisma.notification.create({
           data: {
             type: "FOLLOW",
-            userId: targetUserId, // user being followed
-            creatorId: userId, // user following
+            userId: targetUserId,
+            creatorId: userId,
           },
         }),
       ]);
