@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent } from "./ui/card";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Textarea } from "./ui/textarea";
@@ -17,15 +17,6 @@ function CreatePost() {
   const [imageUrl, setImageUrl] = useState("");
   const [isPosting, setIsPosting] = useState(false);
   const [showImageUpload, setShowImageUpload] = useState(false);
-
-  useEffect(() => {
-    const handler = (e: Event) => {
-      const customEvent = e as CustomEvent;
-      setImageUrl(customEvent.detail);
-    };
-    window.addEventListener("imageChange", handler);
-    return () => window.removeEventListener("imageChange", handler);
-  }, []);
 
   const handleSubmit = async () => {
     if (!content.trim() && !imageUrl) return;
@@ -71,7 +62,10 @@ function CreatePost() {
               <ImageUpload
                 endpoint="postImage"
                 value={imageUrl}
-                onChangeUrl="imageChange"
+                onChange={(url) => {
+                  setImageUrl(url);
+                  if (!url) setShowImageUpload(false);
+                }}
               />
             </div>
           )}

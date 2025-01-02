@@ -13,36 +13,47 @@ export async function generateMetadata({
   params: { username: string };
 }) {
   const user = await getProfileByUsername(params.username);
-  if (!user)
+
+  if (!user) {
     return {
       title: "User not found",
-      description: "This user does not exist",
+      description: "The requested profile does not exist.",
     };
+  }
 
   return {
-    title: `${user.name ?? user.username}`,
-    description: user.bio || `Check out ${user.username}'s profile.`,
+    title: user.name ?? user.username,
+    description: user.bio,
   };
 }
 
 async function ProfilePageServer({ params }: { params: { username: string } }) {
   const user = await getProfileByUsername(params.username);
 
-  if (!user) notFound();
+  if (!user) {
+    notFound();
+    return;
+  }
 
-  const [posts, likedPosts, isCurrentUserFollowing] = await Promise.all([
-    getUserPosts(user.id),
-    getUserLikedPosts(user.id),
-    isFollowing(user.id),
-  ]);
+  try {
+    const [posts, likedPosts, isCurrentUserFollowing] = await Promise.all([
+      getUserPosts(user.id),
+      getUserLikedPosts(user.id),
+      isFollowing(user.id),
+    ]);
 
-  return (
-    <ProfilePageClient
-      user={user}
-      posts={posts}
-      likedPosts={likedPosts}
-      isFollowing={isCurrentUserFollowing}
-    />
-  );
+    return (
+      <ProfilePageClient
+        user={user}
+        posts={posts}
+        likedPosts={likedPosts}
+        isFollowing={isCurrentUserFollowing}
+      />
+    );
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    notFound();
+  }
 }
+
 export default ProfilePageServer;

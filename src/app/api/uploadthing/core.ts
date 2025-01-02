@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { auth } from "@clerk/nextjs/server";
 
@@ -19,7 +20,7 @@ export const ourFileRouter = {
       // whatever is returned here is accessible in onUploadComplete as `metadata`
       return { userId };
     })
-    .onUploadComplete(async ({ file }) => {
+    .onUploadComplete(async ({ metadata, file }) => {
       try {
         return { fileUrl: file.url };
       } catch (error) {

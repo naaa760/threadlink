@@ -82,6 +82,7 @@ async function Sidebar() {
 }
 
 export default Sidebar;
+
 const UnAuthenticatedSidebar = () => (
   <div className="sticky top-20">
     <Card>

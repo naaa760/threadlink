@@ -8,7 +8,7 @@ import {
   toggleLike,
 } from "@/actions/post.action";
 import { SignInButton, useUser } from "@clerk/nextjs";
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import toast from "react-hot-toast";
 import { Card, CardContent } from "./ui/card";
 import Link from "next/link";
@@ -47,6 +47,7 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
       setOptmisticLikes((prev) => prev + (hasLiked ? -1 : 1));
       await toggleLike(post.id);
     } catch (error: Error | unknown) {
+      console.error("Failed to toggle like:", error);
       setOptmisticLikes(post._count.likes);
       setHasLiked(post.likes.some((like) => like.userId === dbUserId));
       toast.error(
@@ -67,6 +68,7 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
         setNewComment("");
       }
     } catch (error: Error | unknown) {
+      console.error("Failed to add comment:", error);
       toast.error(
         error instanceof Error ? error.message : "Failed to add comment"
       );
@@ -75,7 +77,7 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
     }
   };
 
-  const handleDeletePost = useCallback(async () => {
+  const handleDeletePost = async () => {
     if (isDeleting) return;
     try {
       setIsDeleting(true);
@@ -83,19 +85,14 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
       if (result.success) toast.success("Post deleted successfully");
       else throw new Error(result.error);
     } catch (error: Error | unknown) {
+      console.error("Failed to delete post:", error);
       toast.error(
         error instanceof Error ? error.message : "Failed to delete post"
       );
     } finally {
       setIsDeleting(false);
     }
-  }, [isDeleting, post.id]);
-
-  useEffect(() => {
-    const handler = () => handleDeletePost();
-    window.addEventListener("deletePost", handler);
-    return () => window.removeEventListener("deletePost", handler);
-  }, [handleDeletePost]);
+  };
 
   return (
     <Card className="overflow-hidden">
@@ -132,7 +129,7 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
                 {dbUserId === post.author.id && (
                   <DeleteAlertDialog
                     isDeleting={isDeleting}
-                    onDeleteEvent="deletePost"
+                    onDelete={handleDeletePost}
                   />
                 )}
               </div>
@@ -161,8 +158,8 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
                 size="sm"
                 className={`text-muted-foreground gap-2 ${
                   hasLiked
-                    ? "text-pink-500 hover:text-pink-600"
-                    : "hover:text-pink-500"
+                    ? "text-red-500 hover:text-red-600"
+                    : "hover:text-red-500"
                 }`}
                 onClick={handleLike}
               >
@@ -189,12 +186,12 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
             <Button
               variant="ghost"
               size="sm"
-              className="text-muted-foreground gap-2 hover:text-lime-500"
+              className="text-muted-foreground gap-2 hover:text-blue-500"
               onClick={() => setShowComments((prev) => !prev)}
             >
               <MessageCircleIcon
                 className={`size-5 ${
-                  showComments ? "fill-lime-500 text-lime-500" : ""
+                  showComments ? "fill-blue-500 text-blue-500" : ""
                 }`}
               />
               <span>{post.comments.length}</span>

@@ -1,60 +1,44 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { UploadButton } from "@uploadthing/react";
-import { OurFileRouter } from "@/app/api/uploadthing/core";
-import { Button } from "./ui/button";
-import { TrashIcon } from "lucide-react";
-import Image from "next/image";
+import { UploadDropzone } from "@/lib/uploadthing";
+import { XIcon } from "lucide-react";
 
 interface ImageUploadProps {
-  endpoint: keyof OurFileRouter;
+  onChange: (url: string) => void;
   value: string;
-  onChangeUrl: string;
+  endpoint: "postImage";
 }
 
-export default function ImageUpload({
-  endpoint,
-  value,
-  onChangeUrl,
-}: ImageUploadProps) {
+function ImageUpload({ endpoint, onChange, value }: ImageUploadProps) {
   if (value) {
     return (
-      <div className="flex flex-col items-center gap-4">
-        <div className="relative aspect-video w-full">
-          <Image
-            src={value}
-            alt="Upload"
-            fill
-            className="object-cover rounded-lg"
-          />
-        </div>
-        <Button
+      <div className="relative size-40">
+        <img
+          src={value}
+          alt="Upload"
+          className="rounded-md size-40 object-cover"
+        />
+        <button
+          onClick={() => onChange("")}
+          className="absolute top-0 right-0 p-1 bg-red-500 rounded-full shadow-sm"
           type="button"
-          variant="destructive"
-          size="sm"
-          onClick={() =>
-            window.dispatchEvent(new CustomEvent(onChangeUrl, { detail: "" }))
-          }
         >
-          <TrashIcon className="h-4 w-4 mr-2" />
-          Remove Image
-        </Button>
+          <XIcon className="h-4 w-4 text-white" />
+        </button>
       </div>
     );
   }
-
   return (
-    <UploadButton<OurFileRouter, "postImage">
+    <UploadDropzone
       endpoint={endpoint}
       onClientUploadComplete={(res) => {
-        window.dispatchEvent(
-          new CustomEvent(onChangeUrl, { detail: res?.[0].url })
-        );
+        onChange(res?.[0].url);
       }}
       onUploadError={(error: Error) => {
-        console.log(`ERROR! ${error.message}`);
+        console.log(error);
       }}
-      className="ut-button:w-full ut-button:bg-primary ut-button:text-primary-foreground"
     />
   );
 }
+export default ImageUpload;
