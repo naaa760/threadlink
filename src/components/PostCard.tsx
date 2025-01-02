@@ -8,7 +8,7 @@ import {
   toggleLike,
 } from "@/actions/post.action";
 import { SignInButton, useUser } from "@clerk/nextjs";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
 import { Card, CardContent } from "./ui/card";
 import Link from "next/link";
@@ -75,7 +75,7 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
     }
   };
 
-  const handleDeletePost = async () => {
+  const handleDeletePost = useCallback(async () => {
     if (isDeleting) return;
     try {
       setIsDeleting(true);
@@ -89,13 +89,13 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
     } finally {
       setIsDeleting(false);
     }
-  };
+  }, [isDeleting, post.id]);
 
   useEffect(() => {
     const handler = () => handleDeletePost();
     window.addEventListener("deletePost", handler);
     return () => window.removeEventListener("deletePost", handler);
-  }, []);
+  }, [handleDeletePost]);
 
   return (
     <Card className="overflow-hidden">
